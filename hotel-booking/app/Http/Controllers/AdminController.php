@@ -9,13 +9,15 @@ class AdminController extends Controller
 {
     /**
      * Главная страница админ-панели - список всех бронирований
+     * Показываем только pending и confirmed, скрываем cancelled
      */
     public function index()
     {
-        // Получаем все бронирования с связанными номерами
-        // latest() - сортировка от новых к старым
-        // with('room') - жадная загрузка связи (избегаем N+1 проблемы)
-        $bookings = Booking::with('room')->latest()->get();
+        // Получаем бронирования со статусами pending и confirmed
+        $bookings = Booking::with('room')
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->latest()
+            ->get();
         
         return view('admin', compact('bookings'));
     }
@@ -25,7 +27,6 @@ class AdminController extends Controller
      */
     public function updateStatus(Request $request, Booking $booking)
     {
-        // Валидируем что статус один из разрешенных
         $request->validate([
             'status' => 'required|in:pending,confirmed,cancelled'
         ]);
@@ -33,7 +34,12 @@ class AdminController extends Controller
         // Обновляем статус бронирования
         $booking->update(['status' => $request->status]);
 
-        // Возвращаем обратно с сообщением об успехе
-        return back()->with('success', 'Статус обновлен!');
+        // Если статус cancelled, не показываем в списке
+        if ($request->status === 'cancelled') {
+            return redirect()->route('admin.dashboard')
+                ->with('success', 'Бронирование отменено и скрыто из списка!');
+        }
+
+        return back()->with('success', 'Статус бронирования обновлен!');
     }
 }

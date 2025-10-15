@@ -41,5 +41,35 @@
 <script src="{{ asset('js/index.js') }}"></script>
 
 @yield('scripts')
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Кастомные скрипты -->
+    @yield('scripts')
+    
+    <script>
+    // Подтверждение действий
+    document.addEventListener('DOMContentLoaded', function() {
+        // Подтверждение для всех форм с классом confirm-action
+        const confirmForms = document.querySelectorAll('form[class*="confirm"]');
+        confirmForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                if (!confirm('Вы уверены, что хотите выполнить это действие?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+        
+        // Кастомные подтверждения для кнопок с data-confirm
+        const confirmButtons = document.querySelectorAll('[data-confirm]');
+        confirmButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                if (!confirm(this.getAttribute('data-confirm'))) {
+                    e.preventDefault();
+                }
+            });
+        });
+    });
+    </script>
 </body>
 </html>

@@ -10,15 +10,17 @@ class Room extends Model
     use HasFactory;
 
     protected $fillable = [
+        'room_number',     // добавляем номер помещения
         'category',
-        'price_per_person', 
-        'characteristics',
-        'image_path',
-        'is_available'
+        'price',           // меняем price_per_person на price
+        'capacity',        // добавляем вместимость
+        'amenities',       // меняем characteristics на amenities
+        'image',           // меняем image_path на image
+        'is_available',
+        'description'      // добавляем описание
     ];
 
     protected $casts = [
-        'characteristics' => 'array',
         'is_available' => 'boolean'
     ];
 
