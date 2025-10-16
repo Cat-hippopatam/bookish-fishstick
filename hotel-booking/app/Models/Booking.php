@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Booking extends Model
 {
@@ -11,11 +12,11 @@ class Booking extends Model
 
     protected $fillable = [
         'room_id',
-        'client_name',     // меняем first_name + last_name на client_name
-        'client_email',    // меняем email на client_email
-        'client_phone',    // меняем phone на client_phone
-        'check_in',        // меняем check_in_date на check_in
-        'check_out',       // меняем check_out_date на check_out
+        'client_name',
+        'client_email', 
+        'client_phone',
+        'check_in',
+        'check_out',
         'status'
     ];
 
@@ -24,8 +25,49 @@ class Booking extends Model
         'check_out' => 'date'
     ];
 
-    public function room()
+    // Убираем отношение belongsTo, т.к. rooms нет в БД
+    // public function room()
+    // {
+    //     return $this->belongsTo(Room::class);
+    // }
+
+    /**
+     * Проверяет доступность номера на указанные даты
+     */
+    public static function isRoomAvailable($roomId, $checkIn, $checkOut, $excludeBookingId = null)
     {
-        return $this->belongsTo(Room::class);
+        $query = self::where('room_id', $roomId)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where(function($q) use ($checkIn, $checkOut) {
+                $q->whereBetween('check_in', [$checkIn, $checkOut])
+                  ->orWhereBetween('check_out', [$checkIn, $checkOut])
+                  ->orWhere(function($q2) use ($checkIn, $checkOut) {
+                      $q2->where('check_in', '<=', $checkIn)
+                         ->where('check_out', '>=', $checkOut);
+                  });
+            });
+
+        if ($excludeBookingId) {
+            $query->where('id', '!=', $excludeBookingId);
+        }
+
+        return $query->count() === 0;
+    }
+
+    /**
+     * Получает занятые даты для номера
+     */
+    public static function getBusyDates($roomId)
+    {
+        return self::where('room_id', $roomId)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->select('check_in', 'check_out')
+            ->get()
+            ->map(function($booking) {
+                return [
+                    'from' => $booking->check_in->format('Y-m-d'),
+                    'to' => $booking->check_out->format('Y-m-d')
+                ];
+            });
     }
 }

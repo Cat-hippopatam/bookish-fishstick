@@ -2,43 +2,41 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Room;
 use Illuminate\Http\Request;
+use App\Services\HotelDataService;
 
 class RoomController extends Controller
 {
-    /**
-     * Главная страница - список всех номеров
-     * При сбросе фильтров первые 4 карточки отображаются случайным образом
-     */
+    protected $hotelDataService;
+
+    public function __construct(HotelDataService $hotelDataService)
+    {
+        $this->hotelDataService = $hotelDataService;
+    }
+
     public function index(Request $request)
     {
-        // Проверяем, был ли запрос на сброс фильтров
         $resetRequested = $request->has('reset');
         
+        // Получаем все комнаты из JSON
+        $rooms = $this->hotelDataService->getRoomsWithRelations();
+        $categories = $this->hotelDataService->getCategories();
+        
+        // Случайный порядок при сбросе
         if ($resetRequested) {
-            // При сбросе фильтров - случайный порядок первых 4 карточек
-            $allRooms = Room::all();
-            
-            if ($allRooms->count() > 4) {
-                // Перемешиваем все номера и берем первые 4 как случайные
-                $shuffledRooms = $allRooms->shuffle();
-                $randomRooms = $shuffledRooms->take(4);
-                $remainingRooms = $shuffledRooms->slice(4);
-                
-                // Объединяем
-                $rooms = $randomRooms->concat($remainingRooms);
+            if ($rooms->count() > 4) {
+                $randomRooms = $rooms->shuffle();
+                $firstFour = $randomRooms->take(4);
+                $rest = $randomRooms->slice(4);
+                $rooms = $firstFour->concat($rest);
             } else {
-                $rooms = $allRooms;
+                $rooms = $rooms->shuffle();
             }
-            
             $isRandomOrder = true;
         } else {
-            // Обычная загрузка - стандартный порядок
-            $rooms = Room::all();
             $isRandomOrder = false;
         }
         
-        return view('index', compact('rooms', 'isRandomOrder'));
+        return view('index', compact('rooms', 'isRandomOrder', 'categories'));
     }
 }

@@ -3,43 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use Illuminate\Http\Request;
 
 class AdminController extends Controller
 {
     /**
      * Главная страница админ-панели - список всех бронирований
-     * Показываем только pending и confirmed, скрываем cancelled
      */
     public function index()
     {
-        // Получаем бронирования со статусами pending и confirmed
-        $bookings = Booking::with('room')
-            ->whereIn('status', ['pending', 'confirmed'])
+        // Получаем бронирования без загрузки room (т.к. rooms нет в БД)
+        $bookings = Booking::whereIn('status', ['pending', 'confirmed'])
             ->latest()
             ->get();
         
         return view('admin', compact('bookings'));
     }
 
-    /**
-     * Обновляет статус бронирования
-     */
-    public function updateStatus(Request $request, Booking $booking)
+    public function updateStatus(Booking $booking, $status)
     {
-        $request->validate([
-            'status' => 'required|in:pending,confirmed,cancelled'
-        ]);
-
-        // Обновляем статус бронирования
-        $booking->update(['status' => $request->status]);
-
-        // Если статус cancelled, не показываем в списке
-        if ($request->status === 'cancelled') {
-            return redirect()->route('admin.dashboard')
-                ->with('success', 'Бронирование отменено и скрыто из списка!');
+        if (!in_array($status, ['confirmed', 'cancelled'])) {
+            return back()->with('error', 'Неверный статус');
         }
 
-        return back()->with('success', 'Статус бронирования обновлен!');
+        $booking->update(['status' => $status]);
+
+        $message = $status === 'confirmed' 
+            ? 'Бронирование подтверждено!' 
+            : 'Бронирование отменено!';
+
+        return back()->with('success', $message);
     }
 }

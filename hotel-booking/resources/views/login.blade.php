@@ -3,32 +3,42 @@
 @section('title', 'Вход в панель администратора')
 
 @section('content')
-<!--Форма авторизации-->
-<div class="d-flex justify-content-between flex-wrap align-items-center">
-    <h1>Вход в панель администратора</h1>
+<div class="row justify-content-center">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Вход для администратора</h4>
+            </div>
+            <div class="card-body">
+                @if(session('error'))
+                    <div class="alert alert-danger">{{ session('error') }}</div>
+                @endif
+
+                @if(session('success'))
+                    <div class="alert alert-success">{{ session('success') }}</div>
+                @endif
+
+                <form method="POST" action="{{ route('admin.login') }}">
+                    @csrf
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="admin@СладкиеСны.рф" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               value="admin123" required>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Войти</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
-
-@if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-@endif
-
-<form class="my-2" method="POST" action="{{ route('admin.login') }}">
-    @csrf
-    <div class="my-2">
-        <label for="password" class="form-label">Пароль администратора *</label>
-        <input type="password" class="form-control @error('password') is-invalid @enderror" 
-               id="password" name="password" required>
-        @error('password')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @else
-            <div class="invalid-feedback">Пожалуйста, введите пароль</div>
-        @enderror
-    </div>
-    <div class="d-grid gap-2">
-        <button class="btn btn-primary">Войти</button>
-    </div>
-</form>
 @endsection
