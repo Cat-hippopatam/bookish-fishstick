@@ -7,10 +7,12 @@
     <h1>Панель администратора</h1>
     <div>
         <a href="{{ route('home') }}" class="btn btn-outline-primary">На главную</a>
+
         <form method="POST" action="{{ route('admin.logout') }}" class="d-inline">
             @csrf
             <button type="submit" class="btn btn-outline-danger">Выйти</button>
         </form>
+        
     </div>
 </div>
 
@@ -27,7 +29,6 @@
             </div>
             <div class="card-body">
                 <h5 class="text-primary">Номер {{ $booking->room_id }}</h5>
-                <!-- <h5 class="text-primary">Номер {{ $booking->room->room_number }}</h5> -->
                 <p><strong>Клиент:</strong> {{ $booking->client_name }}</p>
                 <p><strong>Телефон:</strong> {{ $booking->client_phone }}</p>
                 <p><strong>Даты:</strong> {{ $booking->check_in->format('d.m.Y') }} - {{ $booking->check_out->format('d.m.Y') }}</p>

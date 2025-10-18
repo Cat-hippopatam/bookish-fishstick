@@ -28,7 +28,7 @@
 <!-- Контактная информация -->
 <footer class="py-2 my-2">
     <ul class="nav justify-content-between align-items-center">
-        <li class="nav-item"><a href="#" class="nav-link text-body-secondary">ул. г.Москва, ул. Ивовая, 48</a></li>
+        <li class="nav-item"><a href="#" class="nav-link text-body-secondary">г.Москва, ул. Ивовая, 48</a></li>
         <li class="nav-item"><a href="#" class="nav-link text-body-secondary">Время работы: Пн-Пт, с 8:00-17:00</a></li>
         <li class="nav-item"><a href="tel:88005553535" class="nav-link text-body-secondary">тел. 8 (800) 555 - 35 - 35</a></li>
         <li class="nav-item"><a href="mailto:info@СладкиеСны.рф" class="nav-link text-body-secondary">Email: info@СладкиеСны.рф</a></li>

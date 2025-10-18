@@ -12,26 +12,50 @@ Route::get('/', [RoomController::class, 'index'])->name('home');
 // 2. Маршруты для бронирования - используем room_number для показа, но id для данных
 Route::get('/booking/{roomNumber}', [BookingController::class, 'show'])->name('booking.show');
 Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
-// 2. Маршруты для бронирования (ИСПРАВЛЯЕМ - убираем привязку модели)
-// Route::get('/booking/{room}', [BookingController::class, 'show'])->name('booking.show');
-// Используем room_number вместо id
-// Route::get('/booking/{roomNumber}', [BookingController::class, 'show'])->name('booking.show');
-// Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 
 // 3. Маршруты для аутентификации администратора
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');
 Route::post('/admin/login', [AuthController::class, 'login']);
 
 // 4. Группа маршрутов для админ-панели (требуют аутентификации)
+// Route::middleware('admin')->group(function () {
+//     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+//     Route::post('/admin/bookings/{booking}/confirm', function ($booking) {
+//         return app(AdminController::class)->updateStatus($booking, 'confirmed');
+//     })->name('admin.bookings.confirm');
+    
+//     Route::post('/admin/bookings/{booking}/cancel', function ($booking) {
+//         return app(AdminController::class)->updateStatus($booking, 'cancelled');
+//     })->name('admin.bookings.cancel');
+// });
+
+// 4. Группа маршрутов для админ-панели (требуют аутентификации)
+// Route::middleware('admin')->group(function () {
+//     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+    
+//     // Добавляем маршрут для выхода
+//     Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+    
+//     Route::post('/admin/bookings/{booking}/confirm', function ($booking) {
+//         return app(AdminController::class)->updateStatus($booking, 'confirmed');
+//     })->name('admin.bookings.confirm');
+    
+//     Route::post('/admin/bookings/{booking}/cancel', function ($booking) {
+//         return app(AdminController::class)->updateStatus($booking, 'cancelled');
+//     })->name('admin.bookings.cancel');
+// });
+
+// 4. Группа маршрутов для админ-панели (требуют аутентификации)
 Route::middleware('admin')->group(function () {
     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::post('/admin/bookings/{booking}/confirm', function ($booking) {
-        return app(AdminController::class)->updateStatus($booking, 'confirmed');
-    })->name('admin.bookings.confirm');
     
-    Route::post('/admin/bookings/{booking}/cancel', function ($booking) {
-        return app(AdminController::class)->updateStatus($booking, 'cancelled');
-    })->name('admin.bookings.cancel');
+    // Маршрут для выхода из системы
+    Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.logout');
+    
+    // Исправленные маршруты для управления бронированиями
+    Route::post('/admin/bookings/{id}/confirm', [AdminController::class, 'confirm'])->name('admin.bookings.confirm');
+    
+    Route::post('/admin/bookings/{id}/cancel', [AdminController::class, 'cancel'])->name('admin.bookings.cancel');
 });
 
 // Отладочный маршрут для проверки данных

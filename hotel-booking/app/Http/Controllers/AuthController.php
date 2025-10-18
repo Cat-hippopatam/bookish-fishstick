@@ -36,6 +36,7 @@ class AuthController extends Controller
 
     public function logout()
     {
+        \Log::info('Admin logout');
         session()->forget('admin');
         return redirect()->route('admin.login')->with('success', 'Вы вышли из системы');
     }
