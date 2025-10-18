@@ -3,31 +3,41 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Services\AdminService;
 
 class AuthController extends Controller
 {
-    /**
-     * Показывает форму входа для администратора
-     */
+    protected $adminService;
+
+    public function __construct(AdminService $adminService)
+    {
+        $this->adminService = $adminService;
+    }
+
     public function showLogin()
     {
         return view('login');
     }
 
-    /**
-     * Обрабатывает попытку входа
-     */
     public function login(Request $request)
     {
-        // Временная простая аутентификация (заменим позже на нормальную)
-        if ($request->password === 'admin123') {
-            // Сохраняем в сессии что пользователь - администратор
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        if ($this->adminService->validateLogin($request->email, $request->password)) {
             session(['admin' => true]);
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dashboard')->with('success', 'Добро пожаловать!');
         }
 
-        // Если пароль неверный - возвращаем с ошибкой
-        return back()->with('error', 'Неверный пароль');
+        return back()->with('error', 'Неверный email или пароль');
+    }
+
+    public function logout()
+    {
+        \Log::info('Admin logout');
+        session()->forget('admin');
+        return redirect()->route('admin.login')->with('success', 'Вы вышли из системы');
     }
 }

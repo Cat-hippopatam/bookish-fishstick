@@ -9,17 +9,11 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Отключаем проверку внешних ключей для очистки таблиц
-        \DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        
         $this->call([
-            RoomSeeder::class,
+            // RoomSeeder больше не нужен!
             BookingSeeder::class,
         ]);
 
-        // Включаем проверку внешних ключей обратно
-        \DB::statement('SET FOREIGN_KEY_CHECKS=1');
-
-        $this->command->info('🎉 Все тестовые данные успешно созданы!');
+        $this->command->info('🎉 Данные успешно созданы!');
     }
 }

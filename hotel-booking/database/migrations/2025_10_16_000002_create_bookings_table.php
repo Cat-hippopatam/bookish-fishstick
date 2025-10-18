@@ -6,14 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('room_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('room_id'); // ← Убираем foreignId(), используем unsignedBigInteger
             $table->string('client_name');
             $table->string('client_email');
             $table->string('client_phone');
@@ -21,12 +18,14 @@ return new class extends Migration
             $table->date('check_out');
             $table->enum('status', ['pending', 'confirmed', 'cancelled'])->default('pending');
             $table->timestamps();
+            
+            // Индексы для оптимизации (без foreign key)
+            $table->index('room_id');
+            $table->index('status');
+            $table->index(['check_in', 'check_out']);
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('bookings');

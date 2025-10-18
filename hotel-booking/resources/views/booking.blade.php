@@ -10,12 +10,29 @@
     </div>
 @endif
 
+@if(session('error'))
+    <div class="alert alert-danger text-center" role="alert">
+        {{ session('error') }}
+    </div>
+@endif
+
 <!-- Информация о номере -->
 <div class="card mb-4">
     <div class="card-body">
-        <h3>Вы бронируете: {{ $room->category }}</h3>
-        <p><strong>Цена:</strong> {{ number_format($room->price, 0, ',', ' ') }} ₽ / ночь</p>
-        <p><strong>Вместимость:</strong> {{ $room->capacity }} человек</p>
+        <h3>Вы бронируете: {{ $room['category']['name'] }}</h3>
+        <p><strong>Цена:</strong> {{ number_format($room['price'], 0, ',', ' ') }} ₽ / ночь</p>
+        <p><strong>Вместимость:</strong> {{ $room['capacity'] }} человек</p>
+        <p><strong>Номер:</strong> {{ $room['room_number'] }}</p>
+        
+        <!-- Удобства -->
+        <div class="mt-3">
+            <strong>Удобства:</strong>
+            <div class="mt-1">
+                @foreach($room['amenities_list'] as $amenity)
+                <span class="badge bg-light text-dark border me-1 mb-1">{{ $amenity['name'] }}</span>
+                @endforeach
+            </div>
+        </div>
     </div>
 </div>
 
@@ -26,7 +43,8 @@
 
 <form class="row g-3 needs-validation my-2" method="POST" action="{{ route('booking.store') }}" novalidate>
     @csrf
-    <input type="hidden" name="room_id" value="{{ $room->id }}">
+    
+    <input type="hidden" name="room_id" value="{{ $room['id'] }}">
     
     <div class="col-md-6">
         <label for="client_name" class="form-label">Имя *</label>
@@ -82,9 +100,32 @@
             <div class="invalid-feedback">Пожалуйста, введите дату выезда</div>
         @enderror
     </div>
+
+    <!-- Информация о бронировании -->
+    <div class="col-12">
+        <div class="alert alert-info">
+            <h6>📅 Информация о бронировании:</h6>
+            <p class="mb-1"><strong>Минимальное бронирование:</strong> 1 ночь</p>
+            <p class="mb-1"><strong>Заезд:</strong> с 14:00</p>
+            <p class="mb-0"><strong>Выезд:</strong> до 12:00</p>
+        </div>
+    </div>
+
     
+    
+    <!-- <div class="d-grid gap-2 col-12"> -->
+        <!-- <button class="btn btn-primary btn-lg" type="submit"> -->
+            <!-- В карточке номера проверяем ссылку: -->
+            <!-- <a href="{{ route('booking.show', $room['id']) }}" class="btn btn-success btn-lg"> -->
+                <!-- 🏨 Забронировать номер {{ $room['room_number'] }} -->
+            <!-- </a> -->
+        <!-- </button> -->
+    <!-- </div> -->
+
     <div class="d-grid gap-2 col-12">
-        <button class="btn btn-primary" type="submit">Отправить заявку</button>
+        <button class="btn btn-primary btn-lg" type="submit">
+            🏨 Забронировать номер {{ $room['room_number'] }}
+        </button>
     </div>
 </form>
 @endsection
@@ -102,7 +143,29 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // При изменении даты заезда, обновляем минимальную дату выезда
     checkIn.addEventListener('change', function() {
-        checkOut.min = this.value;
+        if (this.value) {
+            const nextDay = new Date(this.value);
+            nextDay.setDate(nextDay.getDate() + 1);
+            checkOut.min = nextDay.toISOString().split('T')[0];
+            
+            // Если дата выезда раньше новой минимальной даты - сбрасываем
+            if (checkOut.value && checkOut.value < checkOut.min) {
+                checkOut.value = '';
+            }
+        }
+    });
+
+    // При изменении даты выезда, проверяем что она после даты заезда
+    checkOut.addEventListener('change', function() {
+        if (checkIn.value && this.value) {
+            const checkInDate = new Date(checkIn.value);
+            const checkOutDate = new Date(this.value);
+            
+            if (checkOutDate <= checkInDate) {
+                alert('Дата выезда должна быть после даты заезда!');
+                this.value = '';
+            }
+        }
     });
 });
 </script>

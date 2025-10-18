@@ -10,22 +10,33 @@ class Room extends Model
     use HasFactory;
 
     protected $fillable = [
-        'room_number',     // добавляем номер помещения
-        'category',
-        'price',           // меняем price_per_person на price
-        'capacity',        // добавляем вместимость
-        'amenities',       // меняем characteristics на amenities
-        'image',           // меняем image_path на image
+        'room_number',
+        'category_id',
+        'category_name',
+        'price',
+        'capacity',
+        'amenities',
+        'amenity_ids',
+        'image',
         'is_available',
-        'description'      // добавляем описание
+        'description'
     ];
 
     protected $casts = [
-        'is_available' => 'boolean'
+        'is_available' => 'boolean',
+        'amenity_ids' => 'array'
     ];
 
     public function bookings()
     {
         return $this->hasMany(Booking::class);
+    }
+
+    /**
+     * Получить удобства в виде массива
+     */
+    public function getAmenitiesArrayAttribute()
+    {
+        return explode(', ', $this->amenities);
     }
 }
