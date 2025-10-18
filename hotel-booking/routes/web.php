@@ -9,11 +9,14 @@ use Illuminate\Support\Facades\Route;
 // 1. Главная страница - список номеров
 Route::get('/', [RoomController::class, 'index'])->name('home');
 
+// 2. Маршруты для бронирования - используем room_number для показа, но id для данных
+Route::get('/booking/{roomNumber}', [BookingController::class, 'show'])->name('booking.show');
+Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 // 2. Маршруты для бронирования (ИСПРАВЛЯЕМ - убираем привязку модели)
 // Route::get('/booking/{room}', [BookingController::class, 'show'])->name('booking.show');
 // Используем room_number вместо id
-Route::get('/booking/{roomNumber}', [BookingController::class, 'show'])->name('booking.show');
-Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+// Route::get('/booking/{roomNumber}', [BookingController::class, 'show'])->name('booking.show');
+// Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
 
 // 3. Маршруты для аутентификации администратора
 Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('admin.login');

@@ -113,12 +113,18 @@
 
     
     
+    <!-- <div class="d-grid gap-2 col-12"> -->
+        <!-- <button class="btn btn-primary btn-lg" type="submit"> -->
+            <!-- В карточке номера проверяем ссылку: -->
+            <!-- <a href="{{ route('booking.show', $room['id']) }}" class="btn btn-success btn-lg"> -->
+                <!-- 🏨 Забронировать номер {{ $room['room_number'] }} -->
+            <!-- </a> -->
+        <!-- </button> -->
+    <!-- </div> -->
+
     <div class="d-grid gap-2 col-12">
         <button class="btn btn-primary btn-lg" type="submit">
-            <!-- В карточке номера проверяем ссылку: -->
-            <a href="{{ route('booking.show', $room['id']) }}" class="btn btn-success btn-lg">
-                🏨 Забронировать номер {{ $room['room_number'] }}
-            </a>
+            🏨 Забронировать номер {{ $room['room_number'] }}
         </button>
     </div>
 </form>

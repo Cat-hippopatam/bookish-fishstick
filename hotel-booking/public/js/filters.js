@@ -1,7 +1,6 @@
-// Простая версия без классов
+// Улучшенная упрощенная версия с работающими ссылками и случайным порядком
 document.addEventListener('DOMContentLoaded', function() {
-    const roomsContainer = document.getElementById('rooms-container');
-    const categoryButtons = document.querySelectorAll('[data-category]');
+    const categoryButtons = document.querySelectorAll('.btn-group [data-category]');
     const resetButton = document.getElementById('reset-filters');
     
     let currentCategory = 'all';
@@ -12,15 +11,26 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const category = button.getAttribute('data-category');
             filterByCategory(category);
+            
+            // Добавляем параметр категории в URL без перезагрузки
+            updateUrlParameter('category', category);
         });
     });
 
-    // Кнопка сброса
+    // Обработчик для кнопки сброса
     if (resetButton) {
         resetButton.addEventListener('click', (e) => {
             e.preventDefault();
-            resetFilters();
+            // Перезагружаем страницу с параметром reset для случайного порядка
+            window.location.href = getBaseUrl() + '?reset=1';
         });
+    }
+
+    // Проверяем параметры URL при загрузке
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlCategory = urlParams.get('category');
+    if (urlCategory && urlCategory !== 'all') {
+        filterByCategory(urlCategory);
     }
 
     function filterByCategory(category) {
@@ -42,19 +52,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function filterRooms() {
         const roomCards = document.querySelectorAll('.room-card');
-        let visibleCount = 0;
+        let hasVisibleRooms = false;
 
         roomCards.forEach(card => {
             const cardCategory = card.getAttribute('data-category');
+            const shouldShow = currentCategory === 'all' || cardCategory === currentCategory;
             
-            if (currentCategory === 'all' || cardCategory === currentCategory) {
+            if (shouldShow) {
                 card.style.display = 'block';
-                visibleCount++;
+                hasVisibleRooms = true;
                 
+                // Плавное появление
                 setTimeout(() => {
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
-                }, 100);
+                }, 50);
             } else {
                 card.style.opacity = '0';
                 card.style.transform = 'translateY(20px)';
@@ -64,11 +76,13 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        showNoResults(visibleCount === 0);
+        // Показываем сообщение, если нет результатов
+        showNoResults(!hasVisibleRooms);
     }
 
     function showNoResults(show) {
         let noResults = document.getElementById('no-results');
+        const roomsContainer = document.getElementById('rooms-container');
         
         if (show && !noResults) {
             noResults = document.createElement('div');
@@ -78,45 +92,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="alert alert-warning text-center">
                     <h4>Номера не найдены!</h4>
                     <p>По выбранной категории нет доступных номеров.</p>
-                    <button class="btn btn-primary" onclick="resetFilters()">
+                    <button class="btn btn-primary" id="reset-from-empty">
                         Показать все номера
                     </button>
                 </div>
             `;
             roomsContainer.appendChild(noResults);
+
+            // Обработчик для кнопки в сообщении "нет результатов"
+            document.getElementById('reset-from-empty').addEventListener('click', function() {
+                window.location.href = getBaseUrl() + '?reset=1';
+            });
         } else if (!show && noResults) {
             noResults.remove();
         }
     }
 
-    function resetFilters() {
-        currentCategory = 'all';
-        updateActiveButton('all');
-        filterRooms();
-        showResetMessage();
-    }
-
-    function showResetMessage() {
-        const existingMessage = document.querySelector('.reset-message');
-        if (existingMessage) {
-            existingMessage.remove();
+    // Вспомогательные функции для работы с URL
+    function updateUrlParameter(key, value) {
+        const url = new URL(window.location);
+        if (value === 'all') {
+            url.searchParams.delete(key);
+        } else {
+            url.searchParams.set(key, value);
         }
-
-        const message = document.createElement('div');
-        message.className = 'alert alert-info reset-message text-center';
-        message.innerHTML = 'Фильтры сброшены. Показаны все номера.';
-        message.style.position = 'fixed';
-        message.style.top = '20px';
-        message.style.right = '20px';
-        message.style.zIndex = '1000';
-        
-        document.body.appendChild(message);
-        
-        setTimeout(() => {
-            message.remove();
-        }, 3000);
+        window.history.replaceState({}, '', url);
     }
 
-    // Сделаем функции глобальными для onclick
-    window.resetFilters = resetFilters;
+    function getBaseUrl() {
+        return window.location.origin + window.location.pathname;
+    }
+
+    // Инициализация фильтров при загрузке
+    filterRooms();
 });

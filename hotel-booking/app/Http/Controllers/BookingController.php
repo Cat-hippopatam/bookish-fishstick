@@ -19,33 +19,6 @@ class BookingController extends Controller
     /**
      * Показывает форму бронирования для конкретного номера
      */
-    // public function show($roomId)
-    // {
-    //     $room = $this->hotelDataService->getRoomWithRelations($roomId);
-        
-    //     if (!$room) {
-    //         abort(404, 'Номер не найден');
-    //     }
-
-    //     return view('booking', compact('room'));
-    // }
-    // public function show($roomId)
-    // {
-    //     // Добавляем отладку
-    //     \Log::info("BookingController: show method called with roomId: " . $roomId);
-        
-    //     // Получаем комнату из JSON данных
-    //     $room = $this->hotelDataService->getRoomWithRelations($roomId);
-        
-    //     \Log::info("Room data: " . json_encode($room ?: 'NOT FOUND'));
-        
-    //     if (!$room) {
-    //         \Log::error("Room not found for ID: " . $roomId);
-    //         abort(404, 'Номер не найден');
-    //     }
-
-    //     return view('booking', compact('room'));
-    // }
 
     public function show($roomNumber)
     {
@@ -68,8 +41,52 @@ class BookingController extends Controller
     /**
      * Сохраняет новое бронирование в базу
      */
+    // public function store(Request $request)
+    // {
+    //     $validated = $request->validate([
+    //         'room_id' => 'required|numeric',
+    //         'client_name' => 'required|string|max:255',
+    //         'client_email' => 'required|email',
+    //         'client_phone' => 'required|string|max:20',
+    //         'check_in' => 'required|date',
+    //         'check_out' => 'required|date|after:check_in',
+    //     ]);
+
+    //     // Проверяем, существует ли комната в JSON
+    //     $room = $this->hotelDataService->getRoomWithRelations($validated['room_id']);
+    //     if (!$room) {
+    //         return back()->with('error', 'Выбранный номер не существует');
+    //     }
+
+    //     // Проверяем доступность номера
+    //     if (!$room['is_available']) {
+    //         return back()->with('error', 'К сожалению, этот номер сейчас недоступен для бронирования');
+    //     }
+
+    //     // Проверяем пересечение дат с существующими бронированиями
+    //     $isDatesAvailable = $this->checkDateAvailability(
+    //         $validated['room_id'], 
+    //         $validated['check_in'], 
+    //         $validated['check_out']
+    //     );
+
+    //     if (!$isDatesAvailable) {
+    //         return back()->with('error', 'На выбранные даты номер уже забронирован. Пожалуйста, выберите другие даты.');
+    //     }
+
+    //     // Создаем запись бронирования в БД
+    //     Booking::create($validated);
+
+    //     return redirect()->route('home')->with('success', 'Бронирование успешно создано! Мы свяжемся с вами для подтверждения.');
+    // }
+
+    /**
+     * Сохраняет новое бронирование в базу
+     */
     public function store(Request $request)
     {
+        \Log::info("Booking store method called", $request->all());
+        
         $validated = $request->validate([
             'room_id' => 'required|numeric',
             'client_name' => 'required|string|max:255',
@@ -79,9 +96,12 @@ class BookingController extends Controller
             'check_out' => 'required|date|after:check_in',
         ]);
 
+        \Log::info("Validated data:", $validated);
+
         // Проверяем, существует ли комната в JSON
         $room = $this->hotelDataService->getRoomWithRelations($validated['room_id']);
         if (!$room) {
+            \Log::error("Room not found for ID: " . $validated['room_id']);
             return back()->with('error', 'Выбранный номер не существует');
         }
 
@@ -102,9 +122,15 @@ class BookingController extends Controller
         }
 
         // Создаем запись бронирования в БД
-        Booking::create($validated);
-
-        return redirect()->route('home')->with('success', 'Бронирование успешно создано! Мы свяжемся с вами для подтверждения.');
+        try {
+            $booking = Booking::create($validated);
+            \Log::info("Booking created successfully: " . $booking->id);
+            
+            return redirect()->route('home')->with('success', 'Бронирование успешно создано! Мы свяжемся с вами для подтверждения.');
+        } catch (\Exception $e) {
+            \Log::error("Error creating booking: " . $e->getMessage());
+            return back()->with('error', 'Произошла ошибка при создании бронирования. Пожалуйста, попробуйте еще раз.');
+        }
     }
 
     /**

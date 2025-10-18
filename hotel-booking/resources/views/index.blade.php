@@ -18,10 +18,14 @@
             </button>
             @endforeach
         </div>
-        
+
+        <!-- <a href="{{ route('home') }}" class="btn btn-danger" id="reset-filters" onclick="event.preventDefault(); window.resetFilters();">
+            Сбросить фильтр
+        </a> -->
         <a href="{{ route('home') }}?reset=1" class="btn btn-danger" id="reset-filters">
             Сбросить фильтр
         </a>
+        
     </div>
 </div>
 
@@ -225,6 +229,30 @@ document.addEventListener('DOMContentLoaded', function() {
     opacity: 0;
     transform: translateY(20px);
     transition: all 0.3s ease;
+}
+
+/* Гарантируем, что ссылки всегда кликабельны */
+.room-card a {
+    pointer-events: auto !important;
+    text-decoration: none;
+}
+
+/* Стили для кнопок фильтров */
+.btn-group .btn.active {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+
+/* Убедимся, что карточки правильно отображаются */
+.room-card {
+    transition: all 0.3s ease;
+}
+
+/* Ссылки в карточках должны быть полноразмерными */
+.card-footer .d-grid a {
+    display: block;
+    width: 100%;
 }
 </style>
 @endsection
